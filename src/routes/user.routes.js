@@ -1,20 +1,21 @@
-import {registerUser} from "../controllers/user.controllers.js"
-import {Router} from "express"
-import {upload} from "../middlewares/multer.middlewares.js"
+import { registerUser } from "../controllers/user.controllers.js";
+import { Router } from "express";
+import { upload } from "../middlewares/multer.middlewares.js";
 
-const router = Router()
+const router = Router();
 
+// Define the POST route for "/register"
 router.route("/register").post(
     upload.fields([
-        {
-            name : "avatar",
-            maxCount : 1,
-        },{
-            name : "coverImage",
-            maxCount : 1
-        }
+        { name: "avatar", maxCount: 1 },
+        { name: "coverImage", maxCount: 1 }
     ]),
+    // (req, res, next) => {
+    //     console.log("Request body:", req.body);
+    //     console.log("Uploaded files:", req.files);
+    //     next(); // Pass control to the next middleware (registerUser)
+    // },
     registerUser
-)
+);
 
-export default router
+export default router;

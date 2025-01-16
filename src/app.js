@@ -1,6 +1,7 @@
 import express from "express"
 import cors from "cors";
 import cookieParser from "cookie-parser";
+// import { errorHandler } from "./middlewares/error.middlewares.js";
 
 const app = express();
 
@@ -27,4 +28,8 @@ app.use("/api/v1/healthcheck", healthcheckRouter);
 
 app.use("/api/v1/users",userRouter);
 
+
+
+// error handler
+// app.use(errorHandler);
 export {app}
