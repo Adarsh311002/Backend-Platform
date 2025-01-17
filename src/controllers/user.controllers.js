@@ -4,6 +4,28 @@ import {User} from "../models/user.models.js"
 import {uploadOnCloudinary,deleteFromCloudinary} from "../utils/cloudinary.js"
 import { ApiResponse } from "../utils/ApiResponse.js"
 
+
+
+const generateAccessAndRefreshToken = async (user_id) => {
+    try {
+        const user = await User.findById(user_id);
+    
+        if(!user){
+            throw new ApiError(404, "User not found");
+        }
+    
+        const accessToken = user.generateAccessToken();
+        const refreshToken = user.generateRefreshToken();
+    
+        user.refreshToken = refreshToken;
+        await user.save({validateBeforeSave : false});
+    } catch (error) {
+        throw new ApiError(500, "Failed to generate access and refresh tokens");
+    }
+
+}
+
+
 const registerUser = asyncHandler(async (req, res) => {
     const { fullname, email, username, password } = req.body;
 
@@ -94,6 +116,59 @@ const registerUser = asyncHandler(async (req, res) => {
 });
 
 
+const loginUser = asyncHandler(async (req, res) => {
+    //data from body
+    const {email,username,password} = req.body;
+
+    //validation
+
+    if(!email){
+        throw new ApiError(400,"Email is required")
+    }
+
+    const user = await User.findOne({
+        $or : [{email},{username}]
+    })
+
+    if(!user){
+        throw new ApiError(404,"User not found")
+    }
+
+    const isPasswordValid = await user.isPasswordCorrect(password)
+
+    if(!isPasswordValid){
+        throw new ApiError(401,"Invalid credentials")
+    }
+
+    const {accessToken,refreshToken} = await generateAccessAndRefreshToken(user._id);
+
+    const loggerInUser = await User.findById(user._id).select("-password -refreshToken")
+
+    if(!loggerInUser){
+        throw new ApiError(500,"Failed to login user")
+    }
+
+    const options = {
+        httpOnly : true,
+        secure : process.env.NODE_ENV === "production",
+    }
+
+    return res
+    .status(200)
+    .cookie("refreshToken",refreshToken,options)
+    .cookie("accessToken",accessToken,options)
+    .json(new ApiResponse(
+        200,
+        {user : loggerInUser, accessToken, refreshToken},
+        "User logged in successfully"  
+    ))
+
+
+
+})
+
+
 export {
-    registerUser
+    registerUser,
+    loginUser
 }
