@@ -22,6 +22,6 @@ router.route("/register").post(
 
 // secure route
 
-   router.route(/logout).post(jwtVerify,logoutUser);
+   router.route("/logout").post(jwtVerify,logoutUser);
 
 export default router;
