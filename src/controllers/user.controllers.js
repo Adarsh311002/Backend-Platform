@@ -4,6 +4,7 @@ import {User} from "../models/user.models.js"
 import {uploadOnCloudinary,deleteFromCloudinary} from "../utils/cloudinary.js"
 import { ApiResponse } from "../utils/ApiResponse.js"
 import jwt from "jsonwebtoken";
+import mongoose from "mongoose";
 
 
 
@@ -291,16 +292,23 @@ const updateAccountDetails = asyncHandler(async(req,res) => {
 })
 
 const updateUserAvatar = asyncHandler(async(req,res) => {
+
+    console.log("Request File:", req.file); 
+    console.log("Request Body:", req.body);
     
-    const avatarLocalPath = req.file?.avatar?.[0].path;
+    const avatarLocalPath = req.file?.path;
 
     if(!avatarLocalPath){
+        console.error("Avatar file is missing");
         throw new ApiError(400,"Avatar file is missing")
     }
+
+    console.log("Avatar Local Path:", avatarLocalPath);
 
     const avatar = await uploadOnCloudinary(avatarLocalPath);
 
     if(!avatar.url){
+        console.error("Failed to upload avatar to Cloudinary");
         throw new ApiError(500,"Failed to upload avatar")
     }
     
@@ -324,7 +332,7 @@ const updateUserAvatar = asyncHandler(async(req,res) => {
 })
 
 const updateUserCoverImage = asyncHandler(async(req,res) => {
-    const coverLocalPath = req.file?.coverImage?.[0].path;   // req.file?.path
+    const coverLocalPath = req.file?.path;   // req.file?.path
 
     if(!coverLocalPath){
         throw new ApiError(400,"Cover image file is missing")
@@ -393,7 +401,7 @@ const getUserChannelProfile = asyncHandler(async(req,res) => {
                 },
                 isSubscribed : {
                     $cond : {
-                        if :{$in : [req.user?._id,"$subscribers.subscriber"],},
+                        if :{$in : [req.user?._id,"$subscribers.subscriber"]},
                         then : true,
                         else : false
                     }
