@@ -73,15 +73,21 @@
 
 userSchema.pre("save", async function (next){
 
-    if(!this.isModified("password")) return next()
+    if(!this.isModified("password")) return next();
 
-    this.password =  bcrypt.hash(this.password,10)
+        // console.log("Original Password:", this.password); // plain text password
+
+    this.password = await bcrypt.hash(this.password,10)
+
+    // console.log("Hashed Password:", this.password); // hashed password
 
     next()
 })
 
 userSchema.methods.isPasswordCorrect = async function(password){
-    return await bcrypt.compare(password,this.password)
+    // console.log("Provided Password:", password); 
+    // console.log("Stored Hashed Password:", this.password);
+    return await bcrypt.compare(String(password), String(this.password))
 }
 
 userSchema.methods.generateAccessToken = function(){

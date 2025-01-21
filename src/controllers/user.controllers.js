@@ -3,7 +3,7 @@ import {ApiError} from "../utils/ApiError.js"
 import {User} from "../models/user.models.js"
 import {uploadOnCloudinary,deleteFromCloudinary} from "../utils/cloudinary.js"
 import { ApiResponse } from "../utils/ApiResponse.js"
-import { jwt } from "jsonwebtoken"
+import jwt from "jsonwebtoken";
 
 
 
@@ -20,6 +20,9 @@ const generateAccessAndRefreshToken = async (user_id) => {
     
         user.refreshToken = refreshToken;
         await user.save({validateBeforeSave : false});
+
+        return {accessToken,refreshToken}
+        
     } catch (error) {
         throw new ApiError(500, "Failed to generate access and refresh tokens");
     }
@@ -489,6 +492,7 @@ export {
     updateUserAvatar,
     updateUserCoverImage,
     getUserChannelProfile,
-    getWatchHistory
+    getWatchHistory,
+    
 
 }
