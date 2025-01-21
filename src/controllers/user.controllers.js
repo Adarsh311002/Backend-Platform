@@ -22,7 +22,7 @@ const generateAccessAndRefreshToken = async (user_id) => {
         await user.save({validateBeforeSave : false});
 
         return {accessToken,refreshToken}
-        
+
     } catch (error) {
         throw new ApiError(500, "Failed to generate access and refresh tokens");
     }
@@ -243,7 +243,7 @@ const changeCurrentPassword = asyncHandler(async(req,res) => {
 
     const user = await User.findById(req.user?.id)
 
-    const isPasswordValid = await user.isPasswodCorrect(OldPassword)
+    const isPasswordValid = await user.isPasswordCorrect(OldPassword)
 
     if(!isPasswordValid){
         throw new ApiError(400,"Invalid password")
@@ -361,7 +361,7 @@ const getUserChannelProfile = asyncHandler(async(req,res) => {
         throw new ApiError(400,"Username is required")
     }
 
-    const channel = User.aggregate([
+    const channel = await User.aggregate([
         {
             $match : {
                 username : username.toLowerCase()
@@ -393,7 +393,7 @@ const getUserChannelProfile = asyncHandler(async(req,res) => {
                 },
                 isSubscribed : {
                     $cond : {
-                        if :{$in : [req.user?._id,"$subscribers.subscriber"]},
+                        if :{$in : [req.user?._id,"$subscribers.subscriber"],},
                         then : true,
                         else : false
                     }
